@@ -1,69 +1,41 @@
 <?php
-
-use App\Http\Middleware\IsAdmin;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ModelRunController;
+use App\Http\Controllers\Auth\LoginController;
 
-/**
- * Root redirect
- */
-Route::get('/', fn () => Auth::check()
-    ? redirect()->route('admin.alerts')
-    : redirect()->route('login')
-);
-
-/**
- * Auth screens
- */
-Route::get('/login', function () {
-    return Auth::check()
-        ? redirect()->route('admin.alerts')
-        : view('auth.login');
-})->name('login')->middleware('guest');
-
-Route::post('/login', function (Request $request) {
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required'],
-    ]);
-
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
-
-        // Redirect by role
-        return Auth::user()->role === 'admin'
-            ? redirect()->intended(route('admin.alerts'))
-            : redirect()->intended(route('admin.alerts')); // same page for engineers
-    }
-
-    return back()->withErrors([
-        'email' => 'The provided credentials do not match our records.',
-    ])->withInput();
-})->name('login.attempt')->middleware('guest');
-
-Route::post('/logout', function (Request $request) {
-    Auth::logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-
-    return redirect()->route('login')->with('status', 'Logged out successfully.');
-})->name('logout')->middleware('auth');
-
-/**
- * Authenticated routes
- */
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-
-    // ---- Accessible to BOTH admins & engineers ----
-    Route::view('/alerts', 'admin.alerts')->name('alerts');
-
-    // ---- ADMIN ONLY ----
-    Route::middleware(IsAdmin::class)->group(function () {
-        Route::view('/users', 'admin.users')->name('users');
-        Route::view('/sites', 'admin.sites')->name('sites');
-        // add other admin-only pages here
-        Route::view('/agents', 'admin.agents')->name('agents');
-        Route::view('/cameras', 'admin.cameras')->name('cameras');
-    });
+Route::get('/', function () {
+    return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 });
+
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'create'])->name('login');
+    Route::post('/login', [LoginController::class, 'store']);
+});
+Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
+
+
+Route::middleware([])->group(function(){
+  Route::get('/dashboard', DashboardController::class)->name('dashboard');
+  Route::get('/runs', fn()=>view('admin.runs'))->name('runs.index');
+  Route::get('/upload', fn()=>view('admin.upload'))->name('runs.upload');
+  Route::post('/runs', [ModelRunController::class,'store'])->name('runs.store');
+  Route::get('/tides', fn()=>view('admin.tides'))->name('tides.index');
+  Route::get('/scenarios', fn()=>view('admin.scenarios'))->name('scenarios.index');
+  Route::get('/hindcasting', fn()=>view('admin.hindcasting'))->name('hindcasting.index');
+});
+
+
+
+/*Route::view('/login-test', 'login-test');
+Route::post('/login-test', function (Request $r) {
+    $cred = $r->validate(['email'=>'required|email','password'=>'required']);
+    if (Auth::attempt($cred, true)) {
+        $r->session()->regenerate();
+        return 'Logged in as '.Auth::user()->email;
+    }
+    return back()->withErrors(['email'=>'Invalid credentials']);
+})->name('login.test');*/

@@ -13,32 +13,26 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
+    supervisor \
   && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath \
   && rm -rf /var/lib/apt/lists/*
 
 # ─── Composer CLI ───────────────────────────────────────────────────────────
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# ─── Working directory ─────────────────────────────────────────────────────
+# ─── Working directory ──────────────────────────────────────────────────────
 WORKDIR /var/www/html
 
-# ─── Copy app + install dependencies ───────────────────────────────────────
-COPY src/ ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist \
-    && rm -rf ~/.composer/cache \
-    # Fix Laravel writable dirs
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775        storage bootstrap/cache
+# NOTE: ❌ Don’t copy src/ or run composer install here.
+# The Laravel code will be mounted from host (./src),
+# and dependencies installed at runtime via reset-laravel.
 
 # ─── Supervisor ─────────────────────────────────────────────────────────────
-RUN apt-get update && apt-get install -y supervisor \
-  && rm -rf /var/lib/apt/lists/*
 COPY docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# ─── Entrypoint helper (fix perms on each start) ───────────────────────────
+# ─── Entrypoint ─────────────────────────────────────────────────────────────
 COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# ─── Entrypoint & default command ──────────────────────────────────────────
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["sh", "-c", "php-fpm & /usr/bin/supervisord"]

@@ -2,41 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Super Admin Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StopFloods Login</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <form method="POST" action="/login" class="bg-white p-8 rounded shadow-md w-full max-w-sm">
-        @csrf
-        <div class="flex justify-center mb-6">
-            <img src="{{ asset('images/logo.svg') }}" alt="Butler Technologies Logo" class="h-100">
-        </div>
+<body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="w-full max-w-md bg-white shadow-lg rounded-2xl p-8">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">StopFloods Login</h1>
 
-        <h1 class="text-xl font-bold mb-6 text-center">Super Admin Login</h1>
-
-        @if($errors->any())
-            <div class="bg-red-100 text-red-700 p-2 rounded mb-4">
+        @if ($errors->any())
+            <div class="mb-4 rounded-lg bg-red-100 px-4 py-3 text-sm text-red-700">
                 {{ $errors->first() }}
             </div>
         @endif
 
-        <div class="mb-4">
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input id="email" name="email" type="email" required autofocus
-                   class="mt-1 block w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-                   value="{{ old('email') }}">
-        </div>
+        <form method="POST" action="{{ route('login') }}" class="space-y-6">
+            @csrf
 
-        <div class="mb-6">
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <input id="password" name="password" type="password" required
-                   class="mt-1 block w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring focus:border-blue-300">
-        </div>
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input id="email" type="email" name="email" value="{{ old('email') }}"
+                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       placeholder="you@example.com" required autofocus>
+            </div>
 
-        <button type="submit"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Login
-        </button>
-    </form>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input id="password" type="password" name="password"
+                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       placeholder="••••••••" required>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input id="remember" name="remember" type="checkbox"
+                           class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <label for="remember" class="ml-2 block text-sm text-gray-900">Remember me</label>
+                </div>
+                <a href="#" class="text-sm text-blue-600 hover:text-blue-500">Forgot password?</a>
+            </div>
+
+            <button type="submit"
+                    class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Sign in
+            </button>
+        </form>
+    </div>
 </body>
 </html>

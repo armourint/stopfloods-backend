@@ -1,5 +1,4 @@
-version: "3.8"
-
+name: stopfloods
 services:
   nginx:
     # Bind-mount your built code so /var/www/html/public/images exists
