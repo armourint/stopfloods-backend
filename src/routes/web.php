@@ -18,7 +18,7 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
 
 
-Route::middleware([])->group(function(){
+Route::middleware(['auth'])->group(function(){
   Route::get('/dashboard', DashboardController::class)->name('dashboard');
   Route::get('/runs', fn()=>view('admin.runs'))->name('runs.index');
   Route::get('/upload', fn()=>view('admin.upload'))->name('runs.upload');

@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
+    libwebp-dev \
     locales \
     zip \
     jpegoptim optipng pngquant gifsicle \
@@ -14,8 +15,10 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     supervisor \
-  && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath \
-  && rm -rf /var/lib/apt/lists/*
+ && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+ && docker-php-ext-install -j"$(nproc)" gd pdo_mysql mbstring zip exif pcntl bcmath \
+ && rm -rf /var/lib/apt/lists/*
+
 
 # ─── Composer CLI ───────────────────────────────────────────────────────────
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
